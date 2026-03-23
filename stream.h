@@ -6,9 +6,13 @@
 #include<portaudio.h>
 
 #define SAMPLE_RATE 48000
-#define FRAMES_PER_BUFFER 512
+#define BUFFER_SIZE 512
 #define NUM_CHANNELS 2
 
 void initStream(PaStream *stream);
+
+int readStream(PaStream *stream, float *buffer, unsigned long long frames);
+
+// void processBuffer(float *buffer);
 
 #endif

@@ -1,14 +1,19 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<math.h>
+#include"kiss_fft.h"
 #include<portaudio.h>
 #include<string.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 // STREAM CONST
 #define SAMPLE_RATE 48000
-#define FRAMES_PER_BUFFER 512
+#define BUFFER_SIZE 512
 #define NUM_CHANNELS 2
 
-int initStream(PaStream *stream){
+int initStream(PaStream **stream){
     PaError err = Pa_Initialize();
     if (err != paNoError) printf("Portaudio initialization error: %s", Pa_GetErrorText(err));
 
@@ -28,7 +33,7 @@ int initStream(PaStream *stream){
                 // printf("Max output channels: %d\n", info->maxOutputChannels);
                 // printf("Default low input latency: %f sec\n", info->defaultLowInputLatency);
                 // printf("Default high input latency: %f sec\n", info->defaultHighInputLatency);
-                // break;
+                break;
             }
         }
     }
@@ -37,20 +42,30 @@ int initStream(PaStream *stream){
         printf("VoiceMeeter device not found\n");
         return -1;
     }
+    //test for Pa_OpenStream
+    PaStreamParameters inputParams;
+    inputParams.device = index;                     // the device you found in the loop
+    inputParams.channelCount = NUM_CHANNELS;       // stereo
+    inputParams.sampleFormat = paFloat32;          // float samples
+    inputParams.suggestedLatency =
+        Pa_GetDeviceInfo(index)->defaultLowInputLatency; // choose low latency
+inputParams.hostApiSpecificStreamInfo = NULL;  // usually NULL
 
     // Open Stream
-    err = Pa_OpenDefaultStream(&stream,
-                            NUM_CHANNELS,
-                            0,
-                            paFloat32,
-                            SAMPLE_RATE,
-                            FRAMES_PER_BUFFER,
-                            NULL,
-                            NULL);
-    
+    err = Pa_OpenStream(
+    stream,          // pointer to your PaStream*
+    &inputParams,     // input parameters
+    NULL,             // no output
+    SAMPLE_RATE,      // 48000
+    BUFFER_SIZE,// buffer size
+    paClipOff,        // flags (no clipping)
+    NULL,             // no callback (blocking mode)
+    NULL              // userData
+);
+    printf("Reached here\n");
     // check if stream opened
     if (err !=paNoError){
-        printf("Error starting stream: %s", Pa_GetErrorText(err));
+        printf("Error starting stream: %s\n", Pa_GetErrorText(err));
         return -1;
     }
 
@@ -58,10 +73,11 @@ int initStream(PaStream *stream){
     return 0;
 }
 
-int read_stream(PaStream *stream, float *buffer, unsigned long long frames){
-    if (!stream) return -1;
+int readStream(PaStream *stream, float *buffer){
+    // if (!stream) return -1;
     // read data
-    PaError err = Pa_ReadStream(stream, buffer, frames);
+    PaError err = Pa_ReadStream(stream, buffer, BUFFER_SIZE);
+    // printf("haha %s", Pa_GetErrorText(err));
 
     // check data
     if (err !=paNoError){
@@ -75,5 +91,8 @@ int read_stream(PaStream *stream, float *buffer, unsigned long long frames){
 
         }
     }
+    // printf("Read stream\n");
     return 0;
 }
+
+   
