@@ -26,7 +26,7 @@ int initStream(PaStream **stream){
         if (info && info->maxInputChannels>0){
             if (strstr(info->name, "VoiceMeeter Output")){ // VoiceMeeterOutput = B1
                 index = i;
-                printf("Found Voicemeeter at #%d: %s\n", i, info->name);
+                printf("Voicemeeter at #%d: %s\n", i, info->name);
 
                 // printf("Max input channels: %d\n", info->maxInputChannels);
                 // printf("Default sample rate: %.2f\n", info->defaultSampleRate);
@@ -74,6 +74,7 @@ inputParams.hostApiSpecificStreamInfo = NULL;  // usually NULL
 }
 
 int readStream(PaStream *stream, float *buffer){
+    static unsigned int times = 0;
     // if (!stream) return -1;
     // read data
     PaError err = Pa_ReadStream(stream, buffer, BUFFER_SIZE);
@@ -86,7 +87,7 @@ int readStream(PaStream *stream, float *buffer){
             return -1;
         }
         else{
-            printf("Error reading stream: %s\n", Pa_GetErrorText(err));
+            printf("Error reading stream: %s %d\n", Pa_GetErrorText(err), ++times);
             return -1;
 
         }

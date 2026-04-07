@@ -7,9 +7,7 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-// #define SAMPLE_RATE 48000
-// #define FRAMES_PER_BUFFER 512
-// #define NUM_CHANNELS 2
+
 
 typedef struct  {
     kiss_fftr_cfg fft_cfg;
@@ -30,14 +28,13 @@ FFTProc InitFFTProc(){
 }
 
 void processBuffer(float *buffer, FFTProc *proc){
+    // mono
     for (int i = 0; i < BUFFER_SIZE; i++)
-        proc->in[i] = 0.5f * (buffer[i*2] + buffer[i*2 + 1]);
-
-    for (int i = 0; i < BUFFER_SIZE; i++)
-        proc->in[i] = 0.5f * (buffer[i*2] + buffer[i*2 + 1]);
+        proc->in[i] = 0.5f * (buffer[i*2] + buffer[i*2 + 1]) * (proc->window[i]);
 
     kiss_fftr(proc->fft_cfg, proc->in, proc->out);
 
+    // |fft|
     for (int i = 0; i <= BUFFER_SIZE/2; i++)
         proc->mags[i] = sqrtf(proc->out[i].r*proc->out[i].r +
                                proc->out[i].i*proc->out[i].i);
