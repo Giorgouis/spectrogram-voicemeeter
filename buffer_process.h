@@ -21,5 +21,7 @@ FFTProc InitFFTProc();
 
 void processBuffer(float *buffer, FFTProc *proc);
 
+void UpdateGraph(float *heights, const float *buffer);
+
 #endif
 

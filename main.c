@@ -6,11 +6,36 @@
 #include<string.h>
 #include"stream.h"
 #include"buffer_process.h"
-#include"graph.h"
+#include"app_window.h"
 
-#define NUM_BINS 32
-#define MAX_HEIGHT 22
+#define NUM_BINS 48
+#define MAX_HEIGHT 24
 
+float prev[BUFFER_SIZE/2 +1] = {0};
+float buffer[NUM_CHANNELS*BUFFER_SIZE];
+PaStream *stream;
+FFTProc proc;
+
+bool timer600(){
+    static time_t t_start = 0;
+    
+    if (t_start == 0) t_start = time(NULL);
+
+    bool res = (time(NULL)-t_start) <= 600 ;
+
+    if (!res) t_start = 0;
+    return res;
+}
+
+float *SpectrometerLoopFunction(){
+    readStream(stream,buffer, BUFFER_SIZE);
+
+    processBuffer(buffer, &proc);
+
+
+    UpdateGraph(prev, proc.mags);
+    return prev;
+}
 
 void DrawSpectroGraph(float *heightmap) {
     int numBins = NUM_BINS;
@@ -51,41 +76,53 @@ void DrawSpectroGraph(float *heightmap) {
 }
 
 int main(){
-    PaStream *stream;
+    
 
     initStream(&stream);
     Pa_StartStream(stream);
 
     time_t t1 = time(NULL);
-    FFTProc proc = InitFFTProc();
+    proc = InitFFTProc();
     unsigned long long t=0;
-    float prev[BUFFER_SIZE/2 +1] = {0};
-    while (time(NULL)-t1<300){
+    HWND window = createWindow(800, 600, "Spectrometer");
 
-        float buffer[NUM_CHANNELS*BUFFER_SIZE];
+    if (!window)
+        return -1;
+
+    runWindowLoop(window, SpectrometerLoopFunction, timer600);
+
+    DestroyWindow(window);
+
+    return 0;
+    while (time(NULL)-t1<900){
+
+        
 
         readStream(stream,buffer, BUFFER_SIZE);
 
         processBuffer(buffer, &proc);
-        // float avg = 0;
-        // for (int i = 0; i <= BUFFER_SIZE/2; i++) {
-        //     avg+=proc.mags[i];
-        // }
-        // avg = avg/(BUFFER_SIZE/2);
-        // printf("%f ", avg);
-        // for (int i =0; i<10*avg;i++){
-        //     printf("#");
-        // }
-        // printf("\n");
+
 
         UpdateGraph(prev, proc.mags);
 
         if (t++%2==0) // reduce input overflow
         DrawSpectroGraph(prev);
         printf("%d ", t/2);
-        // Pa_Sleep(8);
+        Pa_Sleep(8);
 
     }
+
+    // while (Render_Running()){
+    //     readStream(stream, buffer, BUFFER_SIZE);
+
+    //     processBuffer(buffer, &proc);
+    //     UpdateGraph(prev, proc.mags);
+
+    //     Render_RequestFrame();
+    //     Render_ProcessEvents(prev, BUFFER_SIZE/2 +1);
+
+    //     Sleep(8);
+    // }
     return 0;
     
 }

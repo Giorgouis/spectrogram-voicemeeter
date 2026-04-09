@@ -39,3 +39,16 @@ void processBuffer(float *buffer, FFTProc *proc){
         proc->mags[i] = sqrtf(proc->out[i].r*proc->out[i].r +
                                proc->out[i].i*proc->out[i].i);
 }
+
+void UpdateGraph(float *heights, const float *buffer){
+    
+    for (int i =0; i<BUFFER_SIZE/2 +1; i++){
+        if (buffer[i]> heights[i]) {
+            
+            heights[i] = buffer[i]* (1.8* i/BUFFER_SIZE);
+        }
+        else heights[i] *=0.955f;
+
+        if (heights[i]<0.006f) heights[i] = 0.0f;
+    }
+}
