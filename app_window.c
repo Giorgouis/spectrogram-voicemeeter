@@ -7,14 +7,11 @@
 typedef float* (*loopfunction)();   // returns FFT array
 typedef bool (*conditionfunction)(); 
 
-// ----- Window procedure -----
+
 #include <windows.h>
-#include <stdio.h>
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    // --- Debug print every message ---
-
     switch (msg)
     {
         case WM_DESTROY:
@@ -131,10 +128,13 @@ void renderFFT(HWND hwnd, float* prev){
     ReleaseDC(hwnd, hdcWindow);
 }
 
+bool __true() {return true;}
+
 // ----- Run window loop -----
 void runWindowLoop(HWND window, loopfunction f, conditionfunction condition)
 {
     MSG msg;
+    if (!condition) condition = __true;
     while (condition())
     {
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))

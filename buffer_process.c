@@ -47,8 +47,8 @@ void UpdateGraph(float *heights, const float *buffer){
             
             heights[i] = buffer[i]* (1.8* i/BUFFER_SIZE);
         }
-        else heights[i] *=0.955f;
+        else heights[i] *=0.955f; // steady decrease
 
-        if (heights[i]<0.006f) heights[i] = 0.0f;
+        if (heights[i]<0.007f) heights[i] = 0.0f; // reduce noise
     }
 }
