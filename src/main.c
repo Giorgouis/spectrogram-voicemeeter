@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<portaudio.h>
 #include<math.h>
+#include<windows.h>
 #include<time.h>
 #include<string.h>
 #include"stream.h"
@@ -63,7 +64,12 @@ void DrawSpectroGraph(float *heightmap) { // unused
     fflush(stdout);
 }
 
-int main(){
+int WINAPI WinMain(
+    HINSTANCE hInstance,
+    HINSTANCE hPrevInstance,
+    LPSTR lpCmdLine,
+    int nCmdShow
+){
     
     initStream(&stream);
     Pa_StartStream(stream);
